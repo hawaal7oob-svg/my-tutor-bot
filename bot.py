@@ -41,7 +41,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="model="gemini-1.5-flash"
             contents=user_text,
             config=types.GenerateContentConfig(
                 system_instruction=SYSTEM_INSTRUCTION

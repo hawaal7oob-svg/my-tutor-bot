@@ -4,26 +4,24 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 import google.generativeai as genai
 
-# إعداد التسجيل لرصد أي أخطاء
+# إعداد التسجيل لرصد الأخطاء
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# جلب المفاتيح من بيئة العمل
+# جلب المتغيرات
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# إعداد مفتاح Gemini
+# إعداد Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 
-# التعليمات البرمجية لتوجيه أسلوب البوت
 SYSTEM_INSTRUCTION = (
     "أنت معلم ورائد ذكاء اصطناعي تفاعلي ومحفز. "
     "واجبك هو تقديم الشرح والتوضيح بأسلوب سليم، متدرج، ومبسط للمستخدم."
 )
 
-# إنشاء الموديل
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
     system_instruction=SYSTEM_INSTRUCTION
@@ -57,4 +55,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    

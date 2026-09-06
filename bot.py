@@ -1,20 +1,23 @@
 import os
 import logging
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    ContextTypes,
+    CommandHandler,
+    MessageHandler,
+    filters
+)
 import google.generativeai as genai
 
-# إعداد التسجيل لرصد الأخطاء
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
 )
 
-# جلب المتغيرات
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
-# إعداد Gemini
 genai.configure(api_key=GEMINI_API_KEY)
 
 SYSTEM_INSTRUCTION = (
@@ -28,27 +31,42 @@ model = genai.GenerativeModel(
 )
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    welcome_text = "أهلاً بك! أنا معلمك الذكي 🎓\nكيف يمكنني مساعدتك في دراستك أو أسئلتك اليوم؟"
+    welcome_text = (
+        "أهلاً بك! أنا معلمك الذكي 🎓\n"
+        "كيف يمكنني مساعدتك في دراستك أو أسئلتك اليوم؟"
+    )
     await update.message.reply_text(welcome_text)
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_text = update.message.text
-    await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
+    chat_id = update.effective_chat.id
+    
+    await context.bot.send_chat_action(
+        chat_id=chat_id, 
+        action="typing"
+    )
 
     try:
         response = model.generate_content(user_text)
         await update.message.reply_text(response.text)
     except Exception as e:
-        logging.error(f"Error while calling Gemini API: {e}")
-        await update.message.reply_text("حدث خطأ أثناء معالجة الطلب، يرجى المحاولة لاحقاً.")
+        logging.error(f"Error: {e}")
+        await update.message.reply_text(
+            "حدث خطأ أثناء معالجة الطلب، يرجى المحاولة لاحقاً."
+        )
 
 def main():
     if not TELEGRAM_BOT_TOKEN or not GEMINI_API_KEY:
-        raise ValueError("يرجى التأكد من إضافة TELEGRAM_BOT_TOKEN و GEMINI_API_KEY!")
+        raise ValueError(
+            "يرجى التأكد من إضافة المفاتيح في Environment Variables!"
+        )
 
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
+    app.add_handler(
+        MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message)
+    )
 
     logging.info("البوت يعمل الآن بنجاح...")
     app.run_polling()

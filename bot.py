@@ -2,25 +2,27 @@ import os
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 
-# 1. كود السيرفر الوهمي (لجعل Render يرى أن البوت يستجيب كـ Web Service مجانية)
+# سيرفر وهمي يدعم طلبات GET و HEAD ليتوافق مع Render تماماً
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
+        self.send_header("Content-type", "text/html")
         self.end_headers()
         self.wfile.write(b"OK")
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header("Content-type", "text/html")
+        self.end_headers()
 
 def run_health_check_server():
     port = int(os.environ.get("PORT", 8080))
     server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
     server.serve_forever()
 
-# تشغيل السيرفر الوهمي في الخلفية
+# تشغيل السيرفر في الخلفية
 Thread(target=run_health_check_server, daemon=True).start()
 
-
 # ==========================================
-# 2. هنا يبدأ كود بوت تيليجرام الخاص بك كاملاً
+# ضع كود البوت الخاص بك هنا
 # ==========================================
-import logging
-from telegram import Update
-# بقية استيراداتك وكود البوت الخاص بك هنا...
